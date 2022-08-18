@@ -25,8 +25,12 @@ word =
 
 variable_expansion =
 	"$" n:(name / "{" n:name "}" { return n; }) {
-		if (options.nounset && !(n in process.env))
-			throw n + ": unbound variable";
+		if (!(n in process.env)) {
+			if (options.nounset)
+				throw n + ": unbound variable";
+			else
+				return "";
+		}
 
 		return process.env[n];
 	}
