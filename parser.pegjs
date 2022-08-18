@@ -1,3 +1,14 @@
+{{
+	function expand(name, nounset) {
+		if (name in process.env)
+			return process.env[name];
+		else if (nounset)
+			throw name + ": unbound variable";
+		else
+			return "";
+	}
+}}
+
 env_file =
 	blank_line* assignments ";"? env_file { } /
 	blank_line* blank* comment? { }
@@ -18,27 +29,17 @@ name =
 	}
 
 word =
-	h:(variable_expansion / escaped_char / single_quoted_string / double_quoted_string / literal_char) t:word {
+	h:(variable_expansion / escaped_char / single_quoted_string / double_quoted_string / ordinary_char) t:word {
 		return h + t;
 	} /
 	""
 
 variable_expansion =
 	"$" n:(name / "{" n:name "}" { return n; }) {
-		if (!(n in process.env)) {
-			if (options.nounset)
-				throw n + ": unbound variable";
-			else
-				return "";
-		}
-
-		return process.env[n];
+		return expand(n, options.nounset);
 	} /
 	"${" n:name ":-}" {
-		if (!(n in process.env))
-			return "";
-
-		return process.env[n];
+		return expand(n);
 	}
 
 escaped_char =
@@ -71,7 +72,7 @@ inside_double_quotes =
 	} /
 	""
 
-literal_char =
+ordinary_char =
 	[^|&;<>()$`\\"' \t\n]
 
 blank_line =
