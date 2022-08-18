@@ -33,6 +33,12 @@ variable_expansion =
 		}
 
 		return process.env[n];
+	} /
+	"${" n:name ":-}" {
+		if (!(n in process.env))
+			return "";
+
+		return process.env[n];
 	}
 
 escaped_char =
